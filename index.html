@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Police Analytics Kanban</title>
+    <title>ВРПП Кам'янського РУП — Кібер-Канбан</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0a0f1d;
-            --panel-bg: rgba(16, 24, 48, 0.85);
+            --bg-color: #070b19;
+            --panel-bg: rgba(13, 22, 47, 0.85);
             --border-neon-blue: #00f0ff;
             --border-neon-orange: #ffaa00;
             --border-neon-red: #ff0055;
             --text-main: #e2e8f0;
-            --text-muted: #8a99ad;
-            --glow-blue: rgba(0, 240, 255, 0.2);
-            --glow-orange: rgba(255, 170, 0, 0.2);
-            --glow-red: rgba(255, 0, 85, 0.2);
+            --text-muted: #7ed4ff;
+            --glow-blue: rgba(0, 240, 255, 0.25);
+            --glow-orange: rgba(255, 170, 0, 0.25);
+            --glow-red: rgba(255, 0, 85, 0.25);
             --font-family: 'Orbitron', 'Segoe UI', sans-serif;
         }
 
@@ -24,8 +25,8 @@
         body {
             background-color: var(--bg-color);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(10, 25, 50, 0.5) 0, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(40, 10, 30, 0.3) 0, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(10, 35, 80, 0.6) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(60, 10, 40, 0.4) 0, transparent 50%);
             color: var(--text-main);
             font-family: 'Segoe UI', Roboto, sans-serif;
             margin: 0;
@@ -43,20 +44,31 @@
 
         h1 {
             font-family: var(--font-family);
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             color: #fff;
             text-shadow: 0 0 10px var(--border-neon-blue), 0 0 20px var(--border-neon-blue);
             margin: 0;
         }
 
+        .unit-name {
+            font-family: var(--font-family);
+            color: #fff;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2), transparent);
+            padding: 5px 0;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
         .subtitle {
             font-family: var(--font-family);
-            color: var(--border-neon-blue);
-            font-size: 0.9rem;
-            letter-spacing: 5px;
-            margin-top: 5px;
+            color: var(--border-neon-orange);
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            margin-top: 8px;
             text-transform: uppercase;
         }
 
@@ -95,7 +107,7 @@
 
         .metric-title {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: #a3ccff;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
@@ -170,16 +182,16 @@
 
         .kanban-item:hover {
             transform: scale(1.02);
-            background: rgba(12, 20, 38, 0.9);
+            background: rgba(16, 28, 58, 0.9);
         }
 
         .column-blue .kanban-item { border-left: 3px solid var(--border-neon-blue); }
         .column-orange .kanban-item { border-left: 3px solid var(--border-neon-orange); }
         .column-red .kanban-item { border-left: 3px solid var(--border-neon-red); }
 
-        .column-blue .kanban-item:hover { box-shadow: 0 0 10px rgba(0, 240, 255, 0.15); border-color: var(--border-neon-blue); }
-        .column-orange .kanban-item:hover { box-shadow: 0 0 10px rgba(255, 170, 0, 0.15); border-color: var(--border-neon-orange); }
-        .column-red .kanban-item:hover { box-shadow: 0 0 10px rgba(255, 0, 85, 0.15); border-color: var(--border-neon-red); }
+        .column-blue .kanban-item:hover { box-shadow: 0 0 12px var(--glow-blue); border-color: var(--border-neon-blue); }
+        .column-orange .kanban-item:hover { box-shadow: 0 0 12px var(--glow-orange); border-color: var(--border-neon-orange); }
+        .column-red .kanban-item:hover { box-shadow: 0 0 12px var(--glow-red); border-color: var(--border-neon-red); }
 
         .item-tag {
             font-family: var(--font-family);
@@ -205,7 +217,7 @@
 
         .item-desc {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: #a3ccff;
             line-height: 1.4;
         }
 
@@ -216,6 +228,90 @@
             font-size: 0.75rem;
             color: rgba(0, 240, 255, 0.6);
             font-family: var(--font-family);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .click-prompt {
+            color: #ffaa00;
+            animation: pulseText 1.5s infinite;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* МОДАЛЬНЕ ВІКНО ДЛЯ ДІАГРАМ */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 7, 16, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            background: #0d162f;
+            border: 2px solid var(--border-neon-blue);
+            box-shadow: 0 0 30px var(--glow-blue);
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none;
+            border: 1px solid var(--border-neon-red);
+            color: var(--border-neon-red);
+            font-family: var(--font-family);
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--border-neon-red);
+            color: #fff;
+            box-shadow: 0 0 10px var(--glow-red);
+        }
+
+        .modal-title {
+            font-family: var(--font-family);
+            font-size: 1.3rem;
+            color: #fff;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            border-left: 4px solid var(--border-neon-blue);
+            padding-left: 10px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
         }
 
         @keyframes fadeIn {
@@ -223,7 +319,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ДЕКОРАТИВНИЙ КІБЕР-РАДАР ГРАФІК */
         .radar-pulse {
             position: absolute;
             width: 10px; height: 10px;
@@ -245,18 +340,18 @@
 
     <header>
         <div class="radar-pulse"></div>
-        <h1>M.O.N.I.T.O.R.I.N.G. // ANALYTICS</h1>
-        <div class="subtitle">Внутрішній аудит морально-психологічного клімату підрозділу</div>
+        <h1>M.O.N.I.T.O.R.I.N.G. // SYSTEM</h1>
+        <div class="unit-name">ВРПП Кам'янського РУП ГУНП в Дніпропетровській області</div>
+        <div class="subtitle">Аналіз критичних маркерів діяльності та лояльності</div>
     </header>
 
-    <!-- ЧИСЛОВІ КАРТКИ З АНІМАЦІЄЮ -->
     <section class="metrics-container">
         <div class="metric-card">
-            <div class="metric-title">Співробітники в базі</div>
+            <div class="metric-title">Анкети особового складу</div>
             <div class="metric-value" data-target="28">0</div>
         </div>
         <div class="metric-card warning">
-            <div class="metric-title">Лояльність керівництву</div>
+            <div class="metric-title">Лояльність до ВРПП</div>
             <div class="metric-value" data-target="57">0</div>
         </div>
         <div class="metric-card alert">
@@ -264,136 +359,293 @@
             <div class="metric-value" data-target="35">0</div>
         </div>
         <div class="metric-card alert">
-            <div class="metric-title">Власні кошти на службу</div>
+            <div class="metric-title">Особисті витрати на БРПП</div>
             <div class="metric-value" data-target="78">0</div>
         </div>
     </section>
 
-    <!-- КАНБАН ДОШКА -->
     <main class="kanban-board">
         
-        <!-- СТАБІЛЬНА ЗОНА (BLUE/GREEN) -->
         <div class="kanban-column column-blue">
             <div class="column-header">
-                <span>Стабільні індикатори</span>
+                <span>Стабільні показники</span>
                 <span class="column-count">3</span>
             </div>
             
-            <div class="kanban-item">
+            <div class="kanban-item" data-chart="leader">
                 <span class="item-tag tag-blue">Керівництво</span>
-                <div class="item-title">Реальний авторитет начальника</div>
-                <div class="item-desc">57.1% респондентів підтвердили, що керівник добре знає стан справ та позитивно впливає на команду.</div>
-                <div class="item-footer">Status: Оптимально</div>
+                <div class="item-title">Вплив начальника ВРПП</div>
+                <div class="item-desc">57.1% підтверджують позитивний вплив керівника на клімат. 28.6% описують його як деструктивний.</div>
+                <div class="item-footer"><span>Status: Оптимально</span><span class="click-prompt">📊 Графік</span></div>
             </div>
 
-            <div class="kanban-item">
+            <div class="kanban-item" data-chart="subordination">
                 <span class="item-tag tag-blue">Взаємовідносини</span>
-                <div class="item-title">Субординація в нормі</div>
-                <div class="item-desc">Більшість особового складу заперечує факти приниження, образ чи упередженого ставлення з боку топ-менеджменту.</div>
-                <div class="item-footer">Status: Контрольовано</div>
+                <div class="item-title">Дисципліна та повага</div>
+                <div class="item-desc">Більшість заперечує відкрите приниження чи упередженість з боку топ-ланки. Ситуація тримається в межах Статуту.</div>
+                <div class="item-footer"><span>Status: Контрольовано</span><span class="click-prompt">📊 Графік</span></div>
             </div>
 
-            <div class="kanban-item">
-                <span class="item-tag tag-blue">Професійне ядро</span>
-                <div class="item-title">Ефективні лідери</div>
-                <div class="item-desc">Визначено чітке лідерське ядро поваги: Максименко, Назарчук, Ковальов, Зубко, Чайка.</div>
-                <div class="item-footer">Status: Визначено</div>
+            <div class="kanban-item" data-chart="core">
+                <span class="item-tag tag-blue">Ядро</span>
+                <div class="item-title">Авторитети колективу</div>
+                <div class="item-desc">Основа підрозділу: Максименко, Назарчук, Ковальов, Зубко. Професійне ядро сформовано.</div>
+                <div class="item-footer"><span>Status: Сформовано</span><span class="click-prompt">📊 Графік</span></div>
             </div>
         </div>
 
-        <!-- ЗОНА РИЗИКУ (ORANGE) -->
         <div class="kanban-column column-orange">
             <div class="column-header">
-                <span>Зона ускладнень</span>
+                <span>Зона ризику</span>
                 <span class="column-count">3</span>
             </div>
 
-            <div class="kanban-item">
-                <span class="item-tag tag-orange">Умови праці</span>
-                <div class="item-title">Офісний дискомфорт</div>
-                <div class="item-desc">Є скарги на відсутність канцелярії, паперу та оргтехніки. Кабінети часто облаштовуються за власний рахунок.</div>
-                <div class="item-footer">Priority: Середній</div>
+            <div class="kanban-item" data-chart="conditions">
+                <span class="item-tag tag-orange">Забезпечення</span>
+                <div class="item-title">Матеріальний дискомфорт</div>
+                <div class="item-desc">Гострий дефіцит канцелярії, паперу А4. Поліцейські самотужки купують розхідники для оргтехніки.</div>
+                <div class="item-footer"><span>Priority: Середній</span><span class="click-prompt">📊 Графік</span></div>
             </div>
 
-            <div class="kanban-item">
+            <div class="kanban-item" data-chart="conflicts">
                 <span class="item-tag tag-orange">Мікроклімат</span>
-                <div class="item-title">Внутрішні конфлікти</div>
-                <div class="item-desc">Фіксуються скарги на «наявність осіб, які своєю поведінкою створюють несприятливу атмосферу та підбурюють інших». Вказані прізвища: Дегтярьов, Чайка, Павлюк.</div>
-                <div class="item-footer">Priority: Високий</div>
+                <div class="item-title">Деструктивні елементи</div>
+                <div class="item-desc">Наявні внутрішні конфлікти. Окремі особи підривають бойовий дух (згадуються Дегтярьов, Чайка, Павлюк).</div>
+                <div class="item-footer"><span>Priority: Високий</span><span class="click-prompt">📊 Графік</span></div>
             </div>
 
-            <div class="kanban-item">
-                <span class="item-tag tag-orange">Оцінка праці</span>
-                <div class="item-title">Диспропорція навантаження</div>
-                <div class="item-desc">Частина особового складу вказує на наявність «привілейованих» працівників та залучення до праці в єдиний вихідний день.</div>
-                <div class="item-footer">Priority: Середній</div>
+            <div class="kanban-item" data-chart="workload">
+                <span class="item-tag tag-orange">Графік</span>
+                <div class="item-title">Розподіл навантаження</div>
+                <div class="item-desc">Скарги на залучення в єдиний вихідний день («викликають у неділю, якщо немає показників»). Наявність привілейованих груп.</div>
+                <div class="item-footer"><span>Priority: Середній</span><span class="click-prompt">📊 Графік</span></div>
             </div>
         </div>
 
-        <!-- КРИТИЧНА ЗОНА (RED) -->
         <div class="kanban-column column-red">
             <div class="column-header">
-                <span>Деструктивні фактори</span>
+                <span>Деструкція / Криза</span>
                 <span class="column-count">3</span>
             </div>
 
-            <div class="kanban-item">
-                <span class="item-tag tag-red">Система оцінки</span>
+            <div class="kanban-item" data-chart="sticks">
+                <span class="item-tag tag-red">Система</span>
                 <div class="item-title">"Палочна" система & ТЦК</div>
-                <div class="item-desc">Гостра деструкція: оцінка роботи здійснюється виключно за показниками доставок осіб до РТЦК, «валу» постанов та розкриття злочинів. Невиконання планів карається скасуванням вихідних.</div>
-                <div class="item-footer">Danger Level: Критичний</div>
+                <div class="item-desc">Критичний маркер: оцінка праці привязана виключно до статистики доставки людей в РТЦК та "валу" постанов.</div>
+                <div class="item-footer"><span>Danger: Критичний</span><span class="click-prompt">📊 Графік</span></div>
             </div>
 
-            <div class="kanban-item">
+            <div class="kanban-item" data-chart="churn">
                 <span class="item-tag tag-red">Кадри</span>
-                <div class="item-title">Наміри щодо звільнення / переведення</div>
-                <div class="item-desc">35% опитаних або планують звільнення з НПУ («Не хочу працювати на тупе керівництво»), або вимагають термінової зміни очільника підрозділу. Недокомплект штату вже складає близько 30%.</div>
-                <div class="item-footer">Danger Level: Максимальний</div>
+                <div class="item-title">Загроза відтоку кадрів</div>
+                <div class="item-desc">35% особового складу мають наміри звільнитися або перевестися через вигорання та дії керівництва. Недокомплект ~30%.</div>
+                <div class="item-footer"><span>Danger: Максимальний</span><span class="click-prompt">📊 Графік</span></div>
             </div>
 
-            <div class="kanban-item">
-                <span class="item-tag tag-red">Забезпечення</span>
-                <div class="item-title">Фінансове виснаження інспекторів</div>
-                <div class="item-desc">Системна заправка службових принтерів, купівля паперу, мийка авто та фінансування ремонту патрульних автомобілів на 50-60% здійснюється з ОСОБИСТИХ коштів поліцейських.</div>
-                <div class="item-footer">Danger Level: Критичний</div>
+            <div class="kanban-item" data-chart="finance">
+                <span class="item-tag tag-red">Ресурси</span>
+                <div class="item-title">Служба за власні кошти</div>
+                <div class="item-desc">Ремонт авто патруля ВРПП на 50-60% фінансується з кишені працівників. Сюди ж входить мийка після добового наряду.</div>
+                <div class="item-footer"><span>Danger: Критичний</span><span class="click-prompt">📊 Графік</span></div>
             </div>
         </div>
 
     </main>
 
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-container">
+            <button class="modal-close" id="modalClose">CLOSE</button>
+            <div class="modal-title" id="modalTitle">Назва графіку</div>
+            <div class="chart-wrapper">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ІНТЕРАКТИВНА АНІМАЦІЯ ЛІЧИЛЬНИКІВ
+        // ДАНІ ДЛЯ ІЗОМЕТРИЧНИХ (3D-ПОДІБНИХ) ГРАФІКІВ
+        const chartDataRegistry = {
+            leader: {
+                title: "Вплив керівництва на колектив ВРПП (%)",
+                type: 'pie',
+                labels: ['Позитивний', 'Деструктивний', 'Важко відповісти'],
+                datasets: [{
+                    data: [57.1, 28.6, 14.3],
+                    backgroundColor: ['#00f0ff', '#ff0055', '#ffaa00'],
+                    borderWidth: 2,
+                    borderColor: '#0d162f'
+                }]
+            },
+            subordination: {
+                title: "Дотримання субординації керівництвом (скарги)",
+                type: 'bar',
+                labels: ['Порушень немає', 'Регулярні порушення', 'Упереджене ставлення'],
+                datasets: [{
+                    label: 'Кількість згадок у звітах',
+                    data: [20, 5, 3],
+                    backgroundColor: ['#00f0ff', '#ff0055', '#ffaa00']
+                }]
+            },
+            core: {
+                title: "Рейтинг авторитету (згадки у відповідях)",
+                type: 'bar',
+                labels: ['Підполк. Максименко', 'Назарчук', 'Ковальов', 'Зубко', 'Чайка'],
+                datasets: [{
+                    label: 'Голоси колег',
+                    data: [12, 10, 8, 7, 5],
+                    backgroundColor: '#00f0ff'
+                }]
+            },
+            conditions: {
+                title: "Забезпеченість оргтехнікою та канцелярією",
+                type: 'doughnut',
+                labels: ['Повне забезпечення', 'Часткове (немає паперу)', 'Повна відсутність'],
+                datasets: [{
+                    data: [22, 60, 18],
+                    backgroundColor: ['#00f0ff', '#ffaa00', '#ff0055'],
+                    borderWidth: 2,
+                    borderColor: '#0d162f'
+                }]
+            },
+            conflicts: {
+                title: "Рівень напруги мікроклімату",
+                type: 'pie',
+                labels: ['Здоровий клімат', 'Прихована агресія', 'Конфліктні особи'],
+                datasets: [{
+                    data: [45, 35, 20],
+                    backgroundColor: ['#00f0ff', '#ffaa00', '#ff0055']
+                }]
+            },
+            workload: {
+                title: "Скарги на перевантаження та виклик у вихідні",
+                type: 'bar',
+                labels: ['Понаднормово', 'Стабільний графік', 'Привілейовані групи'],
+                datasets: [{
+                    label: 'Рівень фіксації аномалій',
+                    data: [15, 10, 8],
+                    backgroundColor: ['#ffaa00', '#00f0ff', '#ff0055']
+                }]
+            },
+            sticks: {
+                title: "Пріоритет оцінки роботи (Скарги на 'Палиці')",
+                type: 'doughnut',
+                labels: ['Доставка осіб до ТЦК', 'Вал по постановах', 'Реальна профілактика ПДР'],
+                datasets: [{
+                    data: [65, 25, 10],
+                    backgroundColor: ['#ff0055', '#ffaa00', '#00f0ff']
+                }]
+            },
+            churn: {
+                title: "Проекція кадрових втрат (наступні 3 міс)",
+                type: 'pie',
+                labels: ['Залишаються на службі', 'Планують звільнення', 'Очікують переведення'],
+                datasets: [{
+                    data: [65, 21.4, 13.6],
+                    backgroundColor: ['#00f0ff', '#ff0055', '#ffaa00']
+                }]
+            },
+            finance: {
+                title: "Витрати особистих коштів на службові авто ВРПП",
+                type: 'bar',
+                labels: ['Ремонт авто (50-60%)', 'Мийка техніки', 'Канцелярія', 'Не витрачають'],
+                datasets: [{
+                    label: 'Відсоток опитаних',
+                    data: [58, 75, 80, 12],
+                    backgroundColor: ['#ff0055', '#ffaa00', '#00f0ff', '#00ff66']
+                }]
+            }
+        };
+
+        // АНІМАЦІЯ ЛІЧИЛЬНИКІВ
         document.addEventListener("DOMContentLoaded", () => {
             const counters = document.querySelectorAll('.metric-value');
-            
             counters.forEach(counter => {
                 const target = +counter.getAttribute('data-target');
                 const isPercent = counter.parentNode.classList.contains('warning') || counter.parentNode.classList.contains('alert');
-                
                 let count = 0;
-                const speed = target / 50; // швидкість анімації
+                const speed = target / 50;
                 
                 const updateCount = () => {
                     if (count < target) {
                         count += speed;
                         let displayValue = Math.ceil(count);
                         if(displayValue > target) displayValue = target;
-                        
                         counter.innerText = isPercent ? displayValue + '%' : displayValue;
                         setTimeout(updateCount, 20);
                     } else {
                         counter.innerText = isPercent ? target + '%' : target;
                     }
                 };
-                
                 updateCount();
+            });
+
+            const items = document.querySelectorAll('.kanban-item');
+            items.forEach((item, index) => {
+                item.style.animationDelay = `${index * 0.08}s`;
             });
         });
 
-        // ЕФЕКТ ПООДИНОКОЇ ПОЯВИ КАРТОК (STAGGER ANIMATION)
-        const items = document.querySelectorAll('.kanban-item');
-        items.forEach((item, index) => {
-            item.style.animationDelay = `${index * 0.1}s`;
+        // МОДАЛЬНЕ ВІКНО ТА ЛОГІКА ГРАФІКІВ (CHART.JS CONFIG WITH PSEUDO-3D SHADOWS)
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalClose = document.getElementById('modalClose');
+        let currentChart = null;
+
+        document.querySelectorAll('.kanban-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const chartKey = item.getAttribute('data-chart');
+                const chartConfig = chartDataRegistry[chartKey];
+
+                if (!chartConfig) return;
+
+                modalTitle.innerText = chartConfig.title;
+                modalOverlay.classList.add('active');
+
+                const ctx = document.getElementById('analyticsChart').getContext('2d');
+
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+
+                // Емуляція футуристичного 3D-дизайну через тіні, шрифти Orbitron та радіальні ефекти
+                currentChart = new Chart(ctx, {
+                    type: chartConfig.type,
+                    data: {
+                        labels: chartConfig.labels,
+                        datasets: chartConfig.datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e2e8f0',
+                                    font: { family: 'Orbitron', size: 11 }
+                                }
+                            }
+                        },
+                        scales: chartConfig.type === 'bar' ? {
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: '#7ed4ff', font: { family: 'Orbitron' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#e2e8f0', font: { size: 10 } }
+                            }
+                        } : {}
+                    }
+                });
+            });
+        });
+
+        modalClose.addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) modalOverlay.classList.remove('active');
         });
     </script>
 </body>
